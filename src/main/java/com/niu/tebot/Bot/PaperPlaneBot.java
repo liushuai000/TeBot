@@ -1,23 +1,25 @@
 package com.niu.tebot.Bot;
 
-import okhttp3.*;
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import lombok.experimental.Accessors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.IOException;
-import java.nio.file.OpenOption;
+import javax.persistence.Access;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-
+@Accessors(chain = true)
 @Component
 public class PaperPlaneBot extends TelegramLongPollingBot {
     @Value("${telegram.bot.token}")
@@ -42,10 +44,14 @@ public class PaperPlaneBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             SendMessage message = new SendMessage();
             this.BusinessHandle(input, chatId, message);
-            this.sendReply(message,chatId,message.getText());
+            ReplyKeyboardMarkup replyKeyboardMarkup = this.sendReplyKeyboard();
+            InlineKeyboardMarkup inlineKeyboard = this.sendInlineKeyboard("按钮名称", "1");
+            this.sendReply(message,chatId,message.getText(),replyKeyboardMarkup,inlineKeyboard);
         }
     }
-    //业务处理
+
+
+    //业务处理 https://t.me/cgbllm/4119
     private void BusinessHandle(String input, long chatId, SendMessage message){
         if (input.startsWith("设置汇率")) {
             String huilv = input.substring("设置汇率".length()).trim();
@@ -53,7 +59,13 @@ public class PaperPlaneBot extends TelegramLongPollingBot {
                 try {
                     exchangeRate = Double.parseDouble(huilv);
                     userRates.put(chatId, exchangeRate);
-                    message.setText("汇率已设置为: " + exchangeRate);
+                    message.setText("汇率已设置为: " + exchangeRate+
+                    "                               " +
+                            "金额为"+0+"                        " +
+                            "                                  " +
+                            "当前汇率                             " +
+                            "                                " +
+                            "                    111");
                 } catch (NumberFormatException e) {
                     message.setText("请输入有效的汇率。");
                 }
@@ -80,9 +92,12 @@ public class PaperPlaneBot extends TelegramLongPollingBot {
 
 
 
-    private void sendReply(SendMessage message,Long chatId, String replyText) {
+    private void sendReply(SendMessage message,Long chatId, String replyText,ReplyKeyboardMarkup replyKeyboardMarkup,
+                           InlineKeyboardMarkup inlineKeyboard ) {
         message.setChatId(chatId);
         message.setText(replyText);
+        message.setReplyMarkup(replyKeyboardMarkup);//是否在onUpdateReceived设置
+        message.setReplyMarkup(inlineKeyboard);
         try {
             execute(message); // 发送消息
         } catch (TelegramApiException e) {
@@ -90,5 +105,50 @@ public class PaperPlaneBot extends TelegramLongPollingBot {
         }
     }
 
+    private ReplyKeyboardMarkup sendReplyKeyboard() {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(true); // 可选：一旦用户选择了按钮，键盘会消失
+        // 创建按钮行
+        KeyboardRow row1 = new KeyboardRow();
+        row1.add(new KeyboardButton("Button 1"));
+        row1.add(new KeyboardButton("Button 2"));
+        KeyboardRow row2 = new KeyboardRow();
+        row2.add(new KeyboardButton("Help"));
+        // 将按钮行添加到键盘列表中
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        keyboard.add(row1);
+        keyboard.add(row2);
+        // 设置键盘
+        replyKeyboardMarkup.setKeyboard(keyboard);
+       return replyKeyboardMarkup;
+    }
 
+    /**
+     * 发送内嵌键盘
+     * @param buttonTextName 按钮名称
+     */
+    private InlineKeyboardMarkup sendInlineKeyboard(String buttonTextName,String callbackData) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
+        InlineKeyboardButton inlineKeyboardButton1 = new InlineKeyboardButton();
+        inlineKeyboardButton1.setCallbackData(callbackData);
+        inlineKeyboardButton1.setText(buttonTextName);
+        inlineKeyboardButton1.setUrl("http://www.baidu.com");
+        rowInline1.add(inlineKeyboardButton1);
+        InlineKeyboardButton inlineKeyboardButton2 = new InlineKeyboardButton();
+        inlineKeyboardButton2.setCallbackData("2");
+        inlineKeyboardButton2.setText("2");
+        rowInline1.add(inlineKeyboardButton2);
+        List<InlineKeyboardButton> rowInline2 = new ArrayList<>();
+        InlineKeyboardButton inlineKeyboardButton3 = new InlineKeyboardButton();
+        inlineKeyboardButton3.setCallbackData("3");
+        inlineKeyboardButton3.setText("3");
+        rowInline2.add(inlineKeyboardButton3);
+        rowsInline.add(rowInline1);
+        rowsInline.add(rowInline2);
+        inlineKeyboardMarkup.setKeyboard(rowsInline);
+        return inlineKeyboardMarkup;
+    }
 }
