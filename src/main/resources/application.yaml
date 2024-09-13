@@ -9,6 +9,7 @@ spring:
     url: jdbc:mysql://localhost:3306/image?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull&useTimezone=true&serverTimezone=GMT%2B8&allowMultiQueries=true
     username: root
     password: 123456
+    jdbcUrl: jdbc:mysql://localhost:3306/image?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull&useTimezone=true&serverTimezone=GMT%2B8&allowMultiQueries=true
 # mybatis配置
 mybatis-plus:
   #  mapper-locations: classpath*:mapper/*.xml

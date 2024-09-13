@@ -114,11 +114,6 @@
             <version>0.0.20131108.vaadin1</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.niu</groupId>
-            <artifactId>TeBot</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
     <repositories>
         <repository>
